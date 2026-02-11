@@ -1,6 +1,6 @@
-variable "log_analytics_saved_searchs" {
+variable "log_analytics_saved_searches" {
   description = <<EOT
-Map of log_analytics_saved_searchs, attributes below
+Map of log_analytics_saved_searches, attributes below
 Required:
     - category
     - display_name
