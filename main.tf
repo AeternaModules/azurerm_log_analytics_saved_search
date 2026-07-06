@@ -1,5 +1,5 @@
-resource "azurerm_log_analytics_saved_search" "log_analytics_saved_searchs" {
-  for_each = var.log_analytics_saved_searchs
+resource "azurerm_log_analytics_saved_search" "log_analytics_saved_searches" {
+  for_each = var.log_analytics_saved_searches
 
   category                   = each.value.category
   display_name               = each.value.display_name
