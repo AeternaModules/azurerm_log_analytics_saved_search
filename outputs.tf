@@ -1,3 +1,7 @@
+output "log_analytics_saved_searches_id" {
+  description = "Map of id values across all log_analytics_saved_searches, keyed the same as var.log_analytics_saved_searches"
+  value       = { for k, v in azurerm_log_analytics_saved_search.log_analytics_saved_searches : k => v.id }
+}
 output "log_analytics_saved_searches_category" {
   description = "Map of category values across all log_analytics_saved_searches, keyed the same as var.log_analytics_saved_searches"
   value       = { for k, v in azurerm_log_analytics_saved_search.log_analytics_saved_searches : k => v.category }
