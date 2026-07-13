@@ -23,42 +23,54 @@ EOT
     function_parameters        = optional(list(string))
     tags                       = optional(map(string))
   }))
-  # --- Unconfirmed validation candidates, derived from azurerm_log_analytics_saved_search's provider source ---
-  # Not auto-enabled: either a bespoke provider validator we can't safely translate,
-  # or a path that crosses a list-typed block (needs its own for_each wrapping).
-  # Review, translate into a real validation{} block above, and delete once confirmed.
-  # path: log_analytics_workspace_id
-  #   source:    [from savedsearches.ValidateWorkspaceID] !ok
-  # path: log_analytics_workspace_id
-  #   source:    [from savedsearches.ValidateWorkspaceID] err != nil
-  # path: category
-  #   condition: length(value) > 0
-  #   message:   must not be empty
-  # path: display_name
-  #   condition: length(value) > 0
-  #   message:   must not be empty
-  # path: query
-  #   condition: length(value) > 0
-  #   message:   must not be empty
-  # path: function_alias
-  #   condition: length(value) > 0
-  #   message:   must not be empty
-  # path: function_parameters[*]
-  #   condition: can(regex("^[a-zA-Z_][a-zA-Z0-9-_]*:([a-z]+(=[^,\\n]+)?|\\(\\*\\)|(\\([a-zA-Z_][a-zA-Z0-9-_]*:[a-z]+(,[a-zA-Z_][a-zA-Z0-9-_]*:([a-z]+))*\\)))(,\\s*[a-zA-Z_][a-zA-Z0-9-_]*:([a-z]+(=[^,\\n]+)?|\\(\\*\\)|(\\([a-zA-Z_][a-zA-Z0-9-_]*:[a-z]+(,\\s*[a-zA-Z_][a-zA-Z0-9-_]*:([a-z]+))*\\))))*$", value))
-  #   message:   Log Analytics Saved Search Function Parameters must be in the following format: param-name1:type1=default_value1 OR param-name1:type1 OR param-name1:string='string goes here'
-  # path: tags
-  #   condition: length(value) <= 50
-  #   message:   [from tags.Validate: invalid when len(value) > 50]
-  #   source:    [from tags.Validate: invalid when len(value) > 50]
-  # path: tags
-  #   condition: length(value) <= 512
-  #   message:   [from tags.Validate: invalid when len(value) > 512]
-  #   source:    [from tags.Validate: invalid when len(value) > 512]
-  # path: tags
-  #   source:    [from tags.Validate] err != nil
-  # path: tags
-  #   condition: length(value) <= 256
-  #   message:   [from tags.Validate: invalid when len(value) > 256]
-  #   source:    [from tags.Validate: invalid when len(value) > 256]
+  validation {
+    condition = alltrue([
+      for k, v in var.log_analytics_saved_searches : (
+        length(v.category) > 0
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.log_analytics_saved_searches : (
+        length(v.display_name) > 0
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.log_analytics_saved_searches : (
+        length(v.query) > 0
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.log_analytics_saved_searches : (
+        v.function_alias == null || (length(v.function_alias) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.log_analytics_saved_searches : (
+        v.function_parameters == null || (alltrue([for x in v.function_parameters : can(regex("^[a-zA-Z_][a-zA-Z0-9-_]*:([a-z]+(=[^,\\n]+)?|\\(\\*\\)|(\\([a-zA-Z_][a-zA-Z0-9-_]*:[a-z]+(,[a-zA-Z_][a-zA-Z0-9-_]*:([a-z]+))*\\)))(,\\s*[a-zA-Z_][a-zA-Z0-9-_]*:([a-z]+(=[^,\\n]+)?|\\(\\*\\)|(\\([a-zA-Z_][a-zA-Z0-9-_]*:[a-z]+(,\\s*[a-zA-Z_][a-zA-Z0-9-_]*:([a-z]+))*\\))))*$", x))]))
+      )
+    ])
+    error_message = "Log Analytics Saved Search Function Parameters must be in the following format: param-name1:type1=default_value1 OR param-name1:type1 OR param-name1:string='string goes here'"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.log_analytics_saved_searches : (
+        v.tags == null || (length(v.tags) <= 50)
+      )
+    ])
+    error_message = "[from tags.Validate: invalid when len(value) > 50]"
+  }
+  # Note: 5 additional provider-side validators are enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
 }
 
